@@ -4,11 +4,22 @@ import { ocrService } from '@/services/ocrService'
 import { bubbleDetectionService } from '@/services/bubbleDetection'
 import { translationService } from '@/services/translationService'
 import { workerService } from '@/services/workerService'
+import { ocrCacheService, translationCacheService, imageCacheService } from '@/services/cacheService'
 
 // Enhanced OCR detection using real OCR services
 export const detectTextBoxes = async (imageUrl: string, sourceLanguage: string = 'jpn'): Promise<TextBox[]> => {
   try {
     console.log('Starting OCR detection with real services...');
+    
+    // Check cache first
+    const cachedResult = ocrCacheService.getCachedOCRResult(imageUrl, sourceLanguage);
+    if (cachedResult) {
+      console.log('Using cached OCR result');
+      return processOCRResult(cachedResult, sourceLanguage, imageUrl);
+    }
+    
+    // Cache and optimize the image
+    const optimizedImageUrl = await imageCacheService.cacheImage(imageUrl, 0.9);
     
     // Initialize services
     await Promise.all([
@@ -18,14 +29,21 @@ export const detectTextBoxes = async (imageUrl: string, sourceLanguage: string =
 
     // First, try using the web worker for better performance
     let textBoxes: TextBox[];
+    let ocrResult: any;
     
     if (workerService.isWorkerAvailable()) {
       console.log('Using web worker for OCR...');
-      const ocrResult = await workerService.performOCR(imageUrl, sourceLanguage);
+      ocrResult = await workerService.performOCR(optimizedImageUrl, sourceLanguage);
       textBoxes = processOCRResult(ocrResult, sourceLanguage, imageUrl);
     } else {
       console.log('Using main thread for OCR...');
-      textBoxes = await ocrService.detectText(imageUrl, sourceLanguage);
+      textBoxes = await ocrService.detectText(optimizedImageUrl, sourceLanguage);
+      ocrResult = { lines: textBoxes }; // Create compatible format for caching
+    }
+    
+    // Cache the OCR result
+    if (ocrResult) {
+      ocrCacheService.cacheOCRResult(imageUrl, sourceLanguage, ocrResult);
     }
     
     // Enhance with bubble detection
@@ -51,18 +69,31 @@ export const translateText = async (text: string, fromLang: string, toLang: stri
   try {
     console.log(`Translating "${text}" from ${fromLang} to ${toLang}`);
     
+    // Check cache first
+    const cachedTranslation = translationCacheService.getCachedTranslation(text, fromLang, toLang);
+    if (cachedTranslation) {
+      console.log('Using cached translation');
+      return cachedTranslation;
+    }
+    
+    let translatedText: string;
+    
     // First, try using the web worker
     if (workerService.isWorkerAvailable()) {
       console.log('Using web worker for translation...');
-      return await workerService.translateText(text, fromLang, toLang);
+      translatedText = await workerService.translateText(text, fromLang, toLang);
+    } else {
+      // Fallback to main thread translation
+      console.log('Using main thread for translation...');
+      const result = await translationService.translate(text, fromLang, toLang);
+      console.log(`Translation result: "${result.translatedText}" (${result.provider}, confidence: ${result.confidence})`);
+      translatedText = result.translatedText;
     }
     
-    // Fallback to main thread translation
-    console.log('Using main thread for translation...');
-    const result = await translationService.translate(text, fromLang, toLang);
-    console.log(`Translation result: "${result.translatedText}" (${result.provider}, confidence: ${result.confidence})`);
+    // Cache the translation
+    translationCacheService.cacheTranslation(text, fromLang, toLang, translatedText);
     
-    return result.translatedText;
+    return translatedText;
   } catch (error) {
     console.error('Translation failed, using fallback:', error);
     
