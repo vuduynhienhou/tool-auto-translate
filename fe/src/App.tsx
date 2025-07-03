@@ -7,11 +7,12 @@ import { ProgressIndicator } from "@/components/progress/ProgressIndicator";
 import { useAppStore } from "@/store/useAppStore";
 import { useToast } from "@/hooks/useToast";
 import { createImageUrl } from "@/utils/imageProcessing";
-import { detectTextBoxes, translateText } from "@/utils/mockOCR";
+import { detectTextBoxes, translateText } from "@/utils/realOCR";
 import { generateId } from "@/lib/utils";
 import { MangaPage, TranslationProject, UploadProgress } from "@/types";
 import { FileUploadFormData } from "@/lib/validations";
 import ImageViewer from "@/components/ImageViewer";
+import { configService } from "@/services/configService";
 
 function App() {
   const { project, isProcessing, setProject, setIsProcessing } = useAppStore();
@@ -71,7 +72,7 @@ function App() {
               )
             );
 
-            const textBoxes = await detectTextBoxes(imageUrl);
+            const textBoxes = await detectTextBoxes(imageUrl, data.sourceLanguage);
 
             // Update progress - translating
             setUploadProgress((prev) =>

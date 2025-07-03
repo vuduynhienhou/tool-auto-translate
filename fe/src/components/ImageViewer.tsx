@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { MangaPage, TextBox, EditAction } from '../types';
-import { ZoomIn, ZoomOut, RotateCw, Eye, EyeOff } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCw, Eye, EyeOff, Settings } from 'lucide-react';
+import { SettingsDialog } from './SettingsPanel';
+import { Button } from './ui/button';
 
 interface ImageViewerProps {
   pages: MangaPage[];
@@ -134,6 +136,13 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
             {showOriginal ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             <span>{showOriginal ? 'Hide Original' : 'Show Original'}</span>
           </button>
+
+          <SettingsDialog>
+            <Button variant="outline" size="sm">
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+          </SettingsDialog>
 
           <div className="flex items-center space-x-2">
             <span className="text-sm">Page:</span>
