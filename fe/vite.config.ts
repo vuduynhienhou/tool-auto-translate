@@ -12,5 +12,19 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
+    include: ['tesseract.js', 'opencv.js'],
+  },
+  worker: {
+    format: 'es',
+  },
+  define: {
+    // Fix for opencv.js in Vite
+    global: 'globalThis',
+  },
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
   },
 });
