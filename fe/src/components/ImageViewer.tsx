@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { MangaPage, TextBox, EditAction } from '../types';
-import { ZoomIn, ZoomOut, RotateCw, Eye, EyeOff, Settings } from 'lucide-react';
+import { ZoomIn, ZoomOut, Eye, EyeOff, Settings } from 'lucide-react';
 import { SettingsDialog } from './SettingsPanel';
 import { Button } from './ui/button';
 

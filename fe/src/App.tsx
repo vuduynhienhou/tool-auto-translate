@@ -12,7 +12,7 @@ import { generateId } from "@/lib/utils";
 import { MangaPage, TranslationProject, UploadProgress } from "@/types";
 import { FileUploadFormData } from "@/lib/validations";
 import ImageViewer from "@/components/ImageViewer";
-import { configService } from "@/services/configService";
+// Configuration is loaded automatically via configService
 
 function App() {
   const { project, isProcessing, setProject, setIsProcessing } = useAppStore();
