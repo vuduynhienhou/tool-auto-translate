@@ -78,6 +78,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
           before: { x: textBox.x, y: textBox.y },
           after: { x: textBox.x, y: textBox.y },
           timestamp: Date.now(),
+          description: `Moved text box to new position`,
         });
       }
     }
